@@ -1,0 +1,40 @@
+{% extends "scheduling/base.html" %}
+{% block title %}{{ appt.reference_code }}{% endblock %}
+{% block page_title %}Appointment Detail{% endblock %}
+{% block topbar_actions %}<a href="{% url 'appointment_list' %}" class="btn btn-ghost">← Appointments</a>{% endblock %}
+{% block content %}
+<div class="detail-header">
+  <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800">{{ appt.resident_name }}</h2>
+  <div class="detail-meta">
+    <span style="font-family:monospace;font-size:0.85rem;color:var(--green);background:var(--green-glow);padding:4px 10px;border-radius:6px;border:1px solid var(--green-dim)">{{ appt.reference_code }}</span>
+    <span class="badge badge-{{ appt.status }}">{{ appt.get_status_display }}</span>
+    <div class="meta-item">📅 <strong>{{ appt.appointment_date|date:"l, j F Y" }}</strong> at {{ appt.appointment_time|time:"H:i" }}</div>
+    <div class="meta-item">📞 {{ appt.resident_phone }}</div>
+    {% if appt.zone %}<div class="meta-item">🗺️ {{ appt.zone.name }}</div>{% endif %}
+  </div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Request Details</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem">
+      <div><span style="color:var(--text-muted)">Type:</span> <strong>{{ appt.get_appointment_type_display }}</strong></div>
+      <div><span style="color:var(--text-muted)">Address:</span> {{ appt.address }}</div>
+      {% if appt.resident_email %}<div><span style="color:var(--text-muted)">Email:</span> {{ appt.resident_email }}</div>{% endif %}
+      {% if appt.assigned_collector %}<div><span style="color:var(--text-muted)">Collector:</span> {{ appt.assigned_collector.name }}</div>{% endif %}
+      {% if appt.description %}<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--text-muted)">{{ appt.description }}</div>{% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Update Appointment</div>
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group"><label class="form-label">Status</label>{{ status_form.status }}</div>
+        <div class="form-group"><label class="form-label">Assign Collector</label>{{ status_form.assigned_collector }}</div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div style="margin-top:14px;font-size:0.75rem;color:var(--text-dim)">Booked {{ appt.created_at|date:"j M Y H:i" }}</div>
+{% endblock %}

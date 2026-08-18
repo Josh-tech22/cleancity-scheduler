@@ -1,0 +1,47 @@
+{% extends "scheduling/base.html" %}
+{% block title %}{{ schedule.title }}{% endblock %}
+{% block page_title %}Schedule Detail{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'schedule_list' %}" class="btn btn-ghost">← Schedules</a>
+<a href="{% url 'schedule_delete' schedule.pk %}" class="btn btn-danger btn-sm">Delete</a>
+{% endblock %}
+{% block content %}
+<div class="detail-header">
+  <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800">{{ schedule.title }}</h2>
+  <div class="detail-meta">
+    <span class="badge badge-{{ schedule.status }}">{{ schedule.get_status_display }}</span>
+    <div class="meta-item">📅 <strong>{{ schedule.scheduled_date|date:"l, j F Y" }}</strong> at {{ schedule.scheduled_time|time:"H:i" }}</div>
+    <div class="meta-item">🗺️ <strong>{{ schedule.zone.name }}</strong> — {{ schedule.zone.area }}</div>
+    {% if schedule.collector %}<div class="meta-item">🚛 <strong>{{ schedule.collector.name }}</strong> ({{ schedule.collector.vehicle_number }})</div>{% endif %}
+    <div class="meta-item">🔄 {{ schedule.get_frequency_display }}</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Weight Details</div>
+    <div style="display:flex;gap:24px">
+      <div><div style="font-size:0.75rem;color:var(--text-muted)">Estimated</div><div style="font-size:1.8rem;font-family:'Syne',sans-serif;font-weight:800">{{ schedule.estimated_kg }}<span style="font-size:0.9rem;color:var(--text-muted)">kg</span></div></div>
+      {% if schedule.actual_kg %}<div><div style="font-size:0.75rem;color:var(--text-muted)">Actual</div><div style="font-size:1.8rem;font-family:'Syne',sans-serif;font-weight:800;color:var(--green)">{{ schedule.actual_kg }}<span style="font-size:0.9rem;color:var(--text-muted)">kg</span></div></div>{% endif %}
+    </div>
+    {% if schedule.notes %}<p style="margin-top:14px;font-size:0.85rem;color:var(--text-muted);border-top:1px solid var(--border);padding-top:12px">{{ schedule.notes }}</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Update Status</div>
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-group"><label class="form-label">Status</label>{{ status_form.status }}</div>
+        <div class="form-group"><label class="form-label">Actual Weight (kg)</label>{{ status_form.actual_kg }}</div>
+        <div class="form-group"><label class="form-label">Notes</label>{{ status_form.notes }}</div>
+        <button type="submit" class="btn btn-primary">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div style="margin-top:14px;font-size:0.75rem;color:var(--text-dim)">
+  Created {{ schedule.created_at|date:"j M Y H:i" }} · Last updated {{ schedule.updated_at|date:"j M Y H:i" }}
+</div>
+{% endblock %}

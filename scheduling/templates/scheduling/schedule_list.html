@@ -1,0 +1,49 @@
+{% extends "scheduling/base.html" %}
+{% block title %}Schedules{% endblock %}
+{% block page_title %}Pickup Schedules{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'schedule_create' %}" class="btn btn-primary">+ New Schedule</a>
+{% endblock %}
+{% block content %}
+<form method="get" class="filters">
+  <select name="status" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Statuses</option>
+    {% for val, label in status_choices %}
+    <option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="zone" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Zones</option>
+    {% for zone in zones %}
+    <option value="{{ zone.pk }}" {% if filters.zone == zone.pk|stringformat:"s" %}selected{% endif %}>{{ zone.name }}</option>
+    {% endfor %}
+  </select>
+  <input type="date" name="date_from" class="filter-select" value="{{ filters.date_from }}" onchange="this.form.submit()">
+  <input type="date" name="date_to" class="filter-select" value="{{ filters.date_to }}" onchange="this.form.submit()">
+</form>
+<div class="card">
+  {% if schedules %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Title</th><th>Zone</th><th>Collector</th><th>Date & Time</th><th>Frequency</th><th>Est. (kg)</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td><a href="{% url 'schedule_detail' s.pk %}"><strong>{{ s.title }}</strong></a></td>
+        <td style="color:var(--text-muted)">{{ s.zone.name }}</td>
+        <td style="color:var(--text-muted)">{{ s.collector.name|default:"—" }}</td>
+        <td style="font-size:0.82rem">{{ s.scheduled_date|date:"d M Y" }}<br><span style="color:var(--text-dim)">{{ s.scheduled_time|time:"H:i" }}</span></td>
+        <td style="font-size:0.8rem;color:var(--text-muted)">{{ s.get_frequency_display }}</td>
+        <td style="font-size:0.82rem">{{ s.estimated_kg }}</td>
+        <td><span class="badge badge-{{ s.status }}">{{ s.get_status_display }}</span></td>
+        <td><a href="{% url 'schedule_detail' s.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="empty-icon">📅</div><p>No schedules found. <a href="{% url 'schedule_create' %}" style="color:var(--green)">Create one →</a></p></div>
+  {% endif %}
+</div>
+{% endblock %}

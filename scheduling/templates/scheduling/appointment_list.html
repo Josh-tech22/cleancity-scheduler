@@ -1,0 +1,39 @@
+{% extends "scheduling/base.html" %}
+{% block title %}Appointments{% endblock %}
+{% block page_title %}Resident Appointments{% endblock %}
+{% block topbar_actions %}<a href="{% url 'appointment_create' %}" class="btn btn-primary">+ Book Appointment</a>{% endblock %}
+{% block content %}
+<form method="get" class="filters">
+  <select name="status" class="filter-select" onchange="this.form.submit()">
+    <option value="">All Statuses</option>
+    {% for val, label in status_choices %}
+    <option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</form>
+<div class="card">
+  {% if appointments %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Ref</th><th>Resident</th><th>Type</th><th>Zone</th><th>Date</th><th>Collector</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td style="font-family:monospace;font-size:0.8rem;color:var(--green)">{{ a.reference_code }}</td>
+        <td><strong>{{ a.resident_name }}</strong><br><span style="font-size:0.72rem;color:var(--text-dim)">{{ a.resident_phone }}</span></td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ a.get_appointment_type_display }}</td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ a.zone.name|default:"—" }}</td>
+        <td style="font-size:0.82rem">{{ a.appointment_date|date:"d M Y" }}<br><span style="color:var(--text-dim)">{{ a.appointment_time|time:"H:i" }}</span></td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ a.assigned_collector.name|default:"Unassigned" }}</td>
+        <td><span class="badge badge-{{ a.status }}">{{ a.get_status_display }}</span></td>
+        <td><a href="{% url 'appointment_detail' a.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="empty-icon">📋</div><p>No appointments found.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

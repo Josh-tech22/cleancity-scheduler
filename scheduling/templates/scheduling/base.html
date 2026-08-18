@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanCity PHC — {% block title %}Scheduler{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e0a;
+    --surface: #111611;
+    --surface2: #182018;
+    --border: #1e2a1e;
+    --green: #3aff6c;
+    --green-dim: #1a8f3a;
+    --green-glow: rgba(58,255,108,0.15);
+    --yellow: #f5e642;
+    --orange: #ff7a35;
+    --red: #ff4545;
+    --blue: #4da6ff;
+    --text: #e8f0e8;
+    --text-muted: #6a826a;
+    --text-dim: #3d503d;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 10% 0%, rgba(58,255,108,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 90% 100%, rgba(58,255,108,0.03) 0%, transparent 60%);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-logo {
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--green);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-mark span { font-weight: 400; color: var(--text-muted); font-size: 0.75rem; display: block; letter-spacing: 0; }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--green-glow);
+    border: 1px solid var(--green-dim);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+  .nav-section { padding: 8px 16px 4px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); font-family: 'Syne', sans-serif; }
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 400;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    margin: 1px 0;
+  }
+  .nav-link:hover { color: var(--text); background: var(--surface2); }
+  .nav-link.active { color: var(--green); background: var(--green-glow); border-left-color: var(--green); font-weight: 500; }
+  .nav-link .icon { width: 18px; text-align: center; font-size: 1rem; opacity: 0.7; }
+  .nav-link.active .icon { opacity: 1; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .status-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; display: inline-block; margin-right: 6px; box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; min-height: 100vh; overflow: hidden; }
+  .topbar {
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    background: rgba(10,14,10,0.8);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .content { padding: 28px; flex: 1; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary { background: var(--green); color: #0a0e0a; }
+  .btn-primary:hover { background: #5fffaa; box-shadow: 0 0 20px var(--green-glow); }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-dim); }
+  .btn-danger { background: rgba(255,69,69,0.1); color: var(--red); border: 1px solid rgba(255,69,69,0.2); }
+  .btn-danger:hover { background: rgba(255,69,69,0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--green));
+  }
+  .stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+  .stat-icon { position: absolute; right: 16px; top: 16px; font-size: 1.5rem; opacity: 0.15; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { text-align: left; padding: 10px 14px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+  td { padding: 13px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  td a { color: var(--text); text-decoration: none; }
+  td a:hover { color: var(--green); }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 500;
+  }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .badge-scheduled { background: rgba(77,166,255,0.12); color: var(--blue); }
+  .badge-completed { background: rgba(58,255,108,0.12); color: var(--green); }
+  .badge-in_progress { background: rgba(245,230,66,0.12); color: var(--yellow); }
+  .badge-missed { background: rgba(255,69,69,0.12); color: var(--red); }
+  .badge-cancelled { background: rgba(100,100,100,0.12); color: #666; }
+  .badge-pending { background: rgba(255,122,53,0.12); color: var(--orange); }
+  .badge-confirmed { background: rgba(58,255,108,0.12); color: var(--green); }
+
+  /* ── FORMS ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+  .form-input, .form-select, .form-textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--green-dim);
+    box-shadow: 0 0 0 3px var(--green-glow);
+  }
+  .form-select option { background: var(--surface2); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  /* ── ALERTS ── */
+  .messages { list-style: none; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .message {
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    font-size: 0.875rem; display: flex; align-items: center; gap: 8px;
+  }
+  .message.success { background: rgba(58,255,108,0.1); border: 1px solid rgba(58,255,108,0.2); color: var(--green); }
+  .message.error { background: rgba(255,69,69,0.1); border: 1px solid rgba(255,69,69,0.2); color: var(--red); }
+
+  /* ── FILTERS ── */
+  .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .filter-select { background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); padding: 7px 12px; border-radius: var(--radius-sm); font-size: 0.82rem; font-family: 'DM Sans', sans-serif; cursor: pointer; outline: none; }
+  .filter-select:focus { border-color: var(--green-dim); }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.3; }
+  .empty p { font-size: 0.9rem; }
+
+  /* ── DETAIL PAGE ── */
+  .detail-header { margin-bottom: 24px; }
+  .detail-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .meta-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; font-size: 0.8rem; color: var(--text-muted); }
+  .meta-item strong { color: var(--text); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+  /* ── CHART CONTAINER ── */
+  .chart-bar { display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-top: 10px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; transition: opacity 0.2s; min-height: 4px; }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 0.65rem; color: var(--text-dim); }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .form-grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🗑️</div>
+      <div>
+        CleanCity
+        <span>Port Harcourt</span>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <span class="icon">⬡</span> Dashboard
+    </a>
+
+    <div class="nav-section">Operations</div>
+    <a href="{% url 'schedule_list' %}" class="nav-link {% if 'schedule' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="icon">📅</span> Pickup Schedules
+    </a>
+    <a href="{% url 'appointment_list' %}" class="nav-link {% if 'appointment' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="icon">📋</span> Appointments
+    </a>
+
+    <div class="nav-section">Management</div>
+    <a href="{% url 'collector_list' %}" class="nav-link {% if 'collector' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="icon">🚛</span> Collectors
+    </a>
+    <a href="{% url 'zone_list' %}" class="nav-link {% if 'zone' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="icon">🗺️</span> Zones
+    </a>
+    <a href="/admin/" class="nav-link">
+      <span class="icon">⚙️</span> Admin Panel
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div><span class="status-dot"></span> System Online</div>
+    <div style="margin-top:4px">Africa/Lagos · v1.0</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+    <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
+  </div>
+  <div class="content">
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="message {{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+</body>
+</html>

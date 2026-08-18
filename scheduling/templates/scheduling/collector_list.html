@@ -1,0 +1,29 @@
+{% extends "scheduling/base.html" %}
+{% block title %}Collectors{% endblock %}
+{% block page_title %}Waste Collectors{% endblock %}
+{% block content %}
+<div class="card">
+  {% if collectors %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Phone</th><th>Vehicle</th><th>Zone</th><th>Schedules</th><th>Completed</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for c in collectors %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ c.phone }}</td>
+        <td style="font-size:0.82rem">{{ c.vehicle_number }}<br><span style="color:var(--text-dim)">{{ c.get_vehicle_type_display }}</span></td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ c.zone.name|default:"—" }}</td>
+        <td style="font-size:0.82rem;color:var(--text-muted)">{{ c.total_schedules }}</td>
+        <td style="font-size:0.82rem;color:var(--green)">{{ c.completed }}</td>
+        <td><span class="badge {% if c.active %}badge-completed{% else %}badge-cancelled{% endif %}">{% if c.active %}Active{% else %}Inactive{% endif %}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="empty-icon">🚛</div><p>No collectors registered. Add them via the <a href="/admin/" style="color:var(--green)">Admin panel</a>.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

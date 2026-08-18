@@ -1,0 +1,173 @@
+{% extends "scheduling/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Operations Dashboard{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'schedule_create' %}" class="btn btn-primary">+ New Schedule</a>
+<a href="{% url 'appointment_create' %}" class="btn btn-ghost">Book Appointment</a>
+{% endblock %}
+
+{% block extra_head %}
+<script>
+const zoneData = {{ zone_data_json|safe }};
+const weeklyTrend = {{ weekly_trend_json|safe }};
+</script>
+{% endblock %}
+
+{% block content %}
+<p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:20px;">
+  {{ today|date:"l, j F Y" }} &nbsp;·&nbsp; Port Harcourt Waste Management Authority
+</p>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card" style="--accent:var(--green)">
+    <div class="stat-icon">📅</div>
+    <div class="stat-label">Today's Pickups</div>
+    <div class="stat-value">{{ today_count }}</div>
+    <div class="stat-sub">{{ completed_today }} completed · {{ completion_rate }}% rate</div>
+  </div>
+  <div class="stat-card" style="--accent:var(--blue)">
+    <div class="stat-icon">📋</div>
+    <div class="stat-label">Pending Appointments</div>
+    <div class="stat-value">{{ pending_appointments }}</div>
+    <div class="stat-sub">Awaiting confirmation</div>
+  </div>
+  <div class="stat-card" style="--accent:var(--yellow)">
+    <div class="stat-icon">🚛</div>
+    <div class="stat-label">Active Collectors</div>
+    <div class="stat-value">{{ active_collectors }}</div>
+    <div class="stat-sub">Deployed across all zones</div>
+  </div>
+  <div class="stat-card" style="--accent:var(--orange)">
+    <div class="stat-icon">⚖️</div>
+    <div class="stat-label">Waste This Week (kg)</div>
+    <div class="stat-value">{{ waste_this_week }}</div>
+    <div class="stat-sub">Collected & processed</div>
+  </div>
+  <div class="stat-card" style="--accent:var(--green-dim)">
+    <div class="stat-icon">📦</div>
+    <div class="stat-label">Total Schedules</div>
+    <div class="stat-value">{{ total_schedules }}</div>
+    <div class="stat-sub">All time</div>
+  </div>
+</div>
+
+<!-- Charts + Upcoming -->
+<div class="grid-2" style="margin-bottom:20px">
+  <!-- Weekly Trend Chart -->
+  <div class="card">
+    <div class="card-title">Weekly Pickup Trend</div>
+    <div class="chart-bar" id="trend-chart"></div>
+    <div style="display:flex;gap:14px;margin-top:10px;font-size:0.72rem;color:var(--text-dim)">
+      <span>🟢 Completed</span><span>🔴 Missed</span>
+    </div>
+  </div>
+
+  <!-- Zone Distribution -->
+  <div class="card">
+    <div class="card-title">Zone Activity (This Week)</div>
+    <div id="zone-bars" style="display:flex;flex-direction:column;gap:10px;margin-top:4px"></div>
+  </div>
+</div>
+
+<!-- Tables -->
+<div class="grid-2">
+  <!-- Recent Schedules -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      Recent Schedules <a href="{% url 'schedule_list' %}" style="color:var(--green);font-size:0.75rem;text-decoration:none;text-transform:none;letter-spacing:0">View all →</a>
+    </div>
+    {% if recent_schedules %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Title</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for s in recent_schedules %}
+        <tr>
+          <td><a href="{% url 'schedule_detail' s.pk %}">{{ s.title|truncatechars:28 }}</a><br><span style="font-size:0.72rem;color:var(--text-dim)">{{ s.zone.name }}</span></td>
+          <td style="font-size:0.8rem;color:var(--text-muted)">{{ s.scheduled_date|date:"d M" }}<br>{{ s.scheduled_time|time:"H:i" }}</td>
+          <td><span class="badge badge-{{ s.status }}">{{ s.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-icon">📅</div><p>No schedules yet.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Upcoming Appointments -->
+  <div class="card">
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+      Upcoming Appointments <a href="{% url 'appointment_list' %}" style="color:var(--green);font-size:0.75rem;text-decoration:none;text-transform:none;letter-spacing:0">View all →</a>
+    </div>
+    {% if upcoming_appointments %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Resident</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for a in upcoming_appointments %}
+        <tr>
+          <td><a href="{% url 'appointment_detail' a.pk %}">{{ a.resident_name|truncatechars:20 }}</a><br><span style="font-size:0.72rem;color:var(--text-dim)">{{ a.reference_code }}</span></td>
+          <td style="font-size:0.8rem;color:var(--text-muted)">{{ a.get_appointment_type_display }}</td>
+          <td style="font-size:0.8rem;color:var(--text-muted)">{{ a.appointment_date|date:"d M" }}</td>
+          <td><span class="badge badge-{{ a.status }}">{{ a.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-icon">📋</div><p>No upcoming appointments.</p></div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// Weekly trend chart
+(function() {
+  const chart = document.getElementById('trend-chart');
+  const maxVal = Math.max(...weeklyTrend.map(w => w.completed + w.missed), 1);
+  weeklyTrend.forEach(w => {
+    const total = w.completed + w.missed;
+    const ch = (v, color) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.cssText = `background:${color};height:${Math.round((v/maxVal)*90)}px`;
+      bar.title = `${v}`;
+      return bar;
+    };
+    const grp = document.createElement('div');
+    grp.className = 'bar-group';
+    grp.appendChild(ch(w.completed, '#3aff6c'));
+    grp.appendChild(ch(w.missed, '#ff4545'));
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-label';
+    lbl.textContent = w.week;
+    grp.appendChild(lbl);
+    chart.appendChild(grp);
+  });
+})();
+
+// Zone bars
+(function() {
+  const container = document.getElementById('zone-bars');
+  const maxVal = Math.max(...zoneData.map(z => z.count), 1);
+  zoneData.forEach(z => {
+    const pct = Math.round((z.count / maxVal) * 100);
+    container.innerHTML += `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:4px">
+          <span style="color:var(--text)">${z.name}</span>
+          <span style="color:var(--text-muted)">${z.count} pickups</span>
+        </div>
+        <div style="background:var(--surface2);border-radius:4px;height:6px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${z.color || '#3aff6c'};border-radius:4px;transition:width 0.8s ease"></div>
+        </div>
+      </div>`;
+  });
+  if (!zoneData.length) container.innerHTML = '<p style="color:var(--text-dim);font-size:0.85rem">No zone data yet.</p>';
+})();
+</script>
+{% endblock %}

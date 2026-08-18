@@ -1,0 +1,33 @@
+{% extends "scheduling/base.html" %}
+{% block title %}Zones{% endblock %}
+{% block page_title %}Collection Zones{% endblock %}
+{% block content %}
+<div class="card">
+  {% if zones %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Zone</th><th>Area</th><th>LGA</th><th>Collectors</th><th>Schedules</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for z in zones %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:10px;height:10px;border-radius:50%;background:{{ z.color }};box-shadow:0 0 6px {{ z.color }}"></div>
+            <strong>{{ z.name }}</strong>
+          </div>
+        </td>
+        <td style="color:var(--text-muted);font-size:0.85rem">{{ z.area }}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem">{{ z.lga }}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem">{{ z.active_collectors }}</td>
+        <td style="color:var(--text-muted);font-size:0.85rem">{{ z.total_schedules }}</td>
+        <td><span class="badge {% if z.active %}badge-completed{% else %}badge-cancelled{% endif %}">{% if z.active %}Active{% else %}Inactive{% endif %}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><div class="empty-icon">🗺️</div><p>No zones configured. Add them via the <a href="/admin/" style="color:var(--green)">Admin panel</a>.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
