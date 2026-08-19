@@ -1,0 +1,287 @@
+{% extends "admin/base.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+  :root {
+    --primary: #00d4ff;
+    --secondary: #0a1628;
+    --accent: #00d4ff;
+    --primary-fg: #fff;
+    --body-fg: #e8f0e8;
+    --body-bg: #050d1a;
+    --body-quiet-color: #6a9ab0;
+    --body-loud-color: #00d4ff;
+    --header-color: #00d4ff;
+    --header-branding-color: #00d4ff;
+    --header-bg: #0a1628;
+    --header-link-color: #00d4ff;
+    --breadcrumbs-fg: #6a9ab0;
+    --breadcrumbs-link-fg: #00d4ff;
+    --breadcrumbs-bg: #0f1f3d;
+    --link-fg: #00d4ff;
+    --link-hover-color: #5fffff;
+    --link-selected-fg: #00d4ff;
+    --hairline-color: #1a2f55;
+    --border-color: #1a2f55;
+    --error-fg: #ff4545;
+    --message-success-bg: rgba(0,212,255,0.1);
+    --darkened-bg: #0f1f3d;
+    --selected-bg: #0f1f3d;
+    --selected-row: #0f1f3d;
+    --button-fg: #050d1a;
+    --button-bg: #00d4ff;
+    --button-hover-bg: #5fffff;
+    --default-button-bg: #00d4ff;
+    --default-button-hover-bg: #5fffff;
+    --close-button-bg: #1a2f55;
+    --close-button-hover-bg: #0f1f3d;
+    --object-tools-fg: #050d1a;
+    --object-tools-bg: #00d4ff;
+    --object-tools-hover-bg: #5fffff;
+  }
+
+  /* Overall body */
+  body {
+    background: #050d1a !important;
+    color: #e8f0e8 !important;
+    font-family: 'Segoe UI', sans-serif !important;
+  }
+
+  /* Header */
+  #header {
+    background: linear-gradient(135deg, #0a1628 0%, #0f1f3d 100%) !important;
+    border-bottom: 2px solid #00d4ff !important;
+    box-shadow: 0 4px 20px rgba(0,212,255,0.2) !important;
+    padding: 12px 20px !important;
+  }
+
+  #branding h1 {
+    color: #00d4ff !important;
+    font-size: 1.4rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  #branding h1 a {
+    color: #00d4ff !important;
+  }
+
+  #user-tools {
+    color: #6a9ab0 !important;
+    font-size: 0.82rem !important;
+  }
+
+  #user-tools a {
+    color: #00d4ff !important;
+    border: 1px solid #1a2f55 !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+  }
+
+  #user-tools a:hover {
+    background: rgba(0,212,255,0.1) !important;
+  }
+
+  /* Navigation */
+  .module {
+    background: #0a1628 !important;
+    border: 1px solid #1a2f55 !important;
+    border-radius: 10px !important;
+    margin-bottom: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .module h2, .module caption {
+    background: linear-gradient(135deg, #0f1f3d, #1a2f55) !important;
+    color: #00d4ff !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    padding: 10px 16px !important;
+    border-bottom: 1px solid #1a2f55 !important;
+  }
+
+  /* Sidebar */
+  #nav-sidebar {
+    background: #0a1628 !important;
+    border-right: 1px solid #1a2f55 !important;
+  }
+
+  /* Content area */
+  #content {
+    background: #050d1a !important;
+    color: #e8f0e8 !important;
+  }
+
+  #content h1 {
+    color: #00d4ff !important;
+    font-size: 1.3rem !important;
+    border-bottom: 1px solid #1a2f55 !important;
+    padding-bottom: 10px !important;
+  }
+
+  /* Breadcrumbs */
+  .breadcrumbs {
+    background: #0f1f3d !important;
+    border-bottom: 1px solid #1a2f55 !important;
+    padding: 8px 20px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .breadcrumbs a {
+    color: #00d4ff !important;
+  }
+
+  /* Tables */
+  #result_list {
+    border: 1px solid #1a2f55 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+  }
+
+  #result_list thead th {
+    background: #0f1f3d !important;
+    color: #6a9ab0 !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    border-bottom: 1px solid #1a2f55 !important;
+    padding: 12px 14px !important;
+  }
+
+  #result_list tbody tr {
+    background: #0a1628 !important;
+    border-bottom: 1px solid #1a2f55 !important;
+  }
+
+  #result_list tbody tr:hover {
+    background: #0f1f3d !important;
+  }
+
+  #result_list tbody td {
+    color: #e8f0e8 !important;
+    padding: 12px 14px !important;
+    border: none !important;
+  }
+
+  #result_list tbody td a {
+    color: #00d4ff !important;
+  }
+
+  /* Buttons */
+  .button, input[type=submit], input[type=button],
+  .submit-row input, a.button {
+    background: #00d4ff !important;
+    color: #050d1a !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+  }
+
+  .button:hover, input[type=submit]:hover {
+    background: #5fffff !important;
+    box-shadow: 0 0 15px rgba(0,212,255,0.3) !important;
+  }
+
+  .button.default {
+    background: #00d4ff !important;
+    color: #050d1a !important;
+  }
+
+  /* Forms */
+  input, select, textarea {
+    background: #0f1f3d !important;
+    border: 1px solid #1a2f55 !important;
+    color: #e8f0e8 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: #00d4ff !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.15) !important;
+  }
+
+  /* Sidebar app list */
+  .app-schedule a,
+  .model-pickupschedule a,
+  .model-appointment a,
+  .model-wastecollector a,
+  .model-zone a {
+    color: #00d4ff !important;
+  }
+
+  /* Footer */
+  #footer {
+    background: #0a1628 !important;
+    border-top: 1px solid #1a2f55 !important;
+    color: #6a9ab0 !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Messages */
+  .messagelist li {
+    background: rgba(0,212,255,0.1) !important;
+    border: 1px solid rgba(0,212,255,0.2) !important;
+    color: #00d4ff !important;
+    border-radius: 6px !important;
+    padding: 10px 16px !important;
+  }
+
+  /* Delete confirmation */
+  .errornote {
+    background: rgba(255,69,69,0.1) !important;
+    border: 1px solid rgba(255,69,69,0.3) !important;
+    color: #ff4545 !important;
+    border-radius: 6px !important;
+  }
+
+  /* Index page app boxes */
+  .app-scheduling .section {
+    background: #0a1628 !important;
+  }
+
+  /* Change list filters */
+  #changelist-filter {
+    background: #0a1628 !important;
+    border-left: 1px solid #1a2f55 !important;
+  }
+
+  #changelist-filter h2 {
+    background: #0f1f3d !important;
+    color: #00d4ff !important;
+    border-bottom: 1px solid #1a2f55 !important;
+  }
+
+  #changelist-filter li.selected a {
+    color: #00d4ff !important;
+  }
+
+  /* Pagination */
+  .paginator {
+    background: #0a1628 !important;
+    border-top: 1px solid #1a2f55 !important;
+    color: #6a9ab0 !important;
+  }
+
+  .paginator a {
+    color: #00d4ff !important;
+  }
+  #theme-toggle { display: none !important;}
+  .theme-toggle { display: none !important;}
+  [data-theme-toggle] { display: none !important;}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    🗑️ CleanCity PHC Admin
+  </a>
+</h1>
+{% endblock %}
