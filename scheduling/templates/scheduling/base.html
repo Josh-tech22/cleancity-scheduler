@@ -439,9 +439,14 @@
   <a href="{% url 'collector_list' %}" class="mobile-nav-item {% if 'collector' in request.resolver_match.url_name %}active{% endif %}">
     <span class="nav-icon">🚛</span><span>Collectors</span>
   </a>
-  <a href="{% url 'about' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-    <span class="nav-icon">ℹ️</span><span>About</span>
-  </a>
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'logout' %}" style="display:contents">
+    {% csrf_token %}
+    <button type="submit" class="mobile-nav-item" style="background:none;border:none;cursor:pointer;font-family:inherit;color:var(--red)">
+      <span class="nav-icon">🚪</span><span>Logout</span>
+    </button>
+  </form>
+  {% endif %}
 </nav>
 
 <script>
