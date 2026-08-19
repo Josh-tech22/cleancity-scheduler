@@ -8,13 +8,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0e0a;
-    --surface: #111611;
-    --surface2: #182018;
-    --border: #1e2a1e;
-    --green: #3aff6c;
-    --green-dim: #1a8f3a;
-    --green-glow: rgba(58,255,108,0.15);
+
+    --bg: #050d1a;
+    --surface: #0a1628;
+    --surface2: #0f1f3d;
+    --border: #1a2f55;
+    --green: #00d4ff;
+    --green-dim: #0066aa;
+    --green-glow: rgba(0,212,255,0.15);
     --yellow: #f5e642;
     --orange: #ff7a35;
     --red: #ff4545;
@@ -33,11 +34,9 @@
     color: var(--text);
     min-height: 100vh;
     display: flex;
-    background-image:
-      radial-gradient(ellipse 60% 40% at 10% 0%, rgba(58,255,108,0.04) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 60% at 90% 100%, rgba(58,255,108,0.03) 0%, transparent 60%);
+    background-image: radial-gradient(ellipse 60% 40% at 10% 0%, rgba(0, 212, 255, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 90% 100%, rgba(0, 100, 255, 0.04) 0%, transparent 60%);
   }
-
   /* ── SIDEBAR ── */
   .sidebar {
     width: 240px;
@@ -302,11 +301,22 @@
     <a href="/admin/" class="nav-link">
       <span class="icon">⚙️</span> Admin Panel
     </a>
+    <a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+    <span class="icon">ℹ️</span> About
+</a>
   </nav>
-  <div class="sidebar-footer">
+ <div class="sidebar-footer">
     <div><span class="status-dot"></span> System Online</div>
     <div style="margin-top:4px">Africa/Lagos · v1.0</div>
-  </div>
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'logout' %}" style="margin-top:10px">
+        {% csrf_token %}
+        <button type="submit" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;width:100%">
+            🚪 Logout {{ user.username }}
+        </button>
+    </form>
+    {% endif %}
+</div>
 </aside>
 
 <main class="main">

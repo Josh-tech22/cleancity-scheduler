@@ -5,10 +5,13 @@ from django.db.models import Count, Sum, Q
 from datetime import date, timedelta
 import json
 
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from .models import PickupSchedule, Appointment, WasteCollector, Zone
 from .forms import PickupScheduleForm, AppointmentForm, ScheduleStatusForm, AppointmentStatusForm
 
-
+@login_required
 def dashboard(request):
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
@@ -78,7 +81,7 @@ def dashboard(request):
 
 
 # ── SCHEDULES ──────────────────────────────────────────────────────────────────
-
+@login_required
 def schedule_list(request):
     qs = PickupSchedule.objects.select_related('zone', 'collector')
 
@@ -104,7 +107,7 @@ def schedule_list(request):
     }
     return render(request, 'scheduling/schedule_list.html', context)
 
-
+@login_required
 def schedule_create(request):
     if request.method == 'POST':
         form = PickupScheduleForm(request.POST)
@@ -119,7 +122,7 @@ def schedule_create(request):
         form = PickupScheduleForm()
     return render(request, 'scheduling/schedule_form.html', {'form': form, 'action': 'Create'})
 
-
+@login_required
 def schedule_detail(request, pk):
     schedule = get_object_or_404(PickupSchedule.objects.select_related('zone', 'collector'), pk=pk)
     status_form = ScheduleStatusForm(instance=schedule)
@@ -131,7 +134,7 @@ def schedule_detail(request, pk):
             return redirect('schedule_detail', pk=pk)
     return render(request, 'scheduling/schedule_detail.html', {'schedule': schedule, 'status_form': status_form})
 
-
+@login_required
 def schedule_delete(request, pk):
     schedule = get_object_or_404(PickupSchedule, pk=pk)
     if request.method == 'POST':
@@ -143,7 +146,7 @@ def schedule_delete(request, pk):
 
 
 # ── APPOINTMENTS ───────────────────────────────────────────────────────────────
-
+@login_required
 def appointment_list(request):
     qs = Appointment.objects.select_related('zone', 'assigned_collector')
     status_filter = request.GET.get('status', '')
@@ -156,7 +159,7 @@ def appointment_list(request):
     }
     return render(request, 'scheduling/appointment_list.html', context)
 
-
+@login_required
 def appointment_create(request):
     if request.method == 'POST':
         form = AppointmentForm(request.POST)
@@ -168,7 +171,7 @@ def appointment_create(request):
         form = AppointmentForm()
     return render(request, 'scheduling/appointment_form.html', {'form': form, 'action': 'Book'})
 
-
+@login_required
 def appointment_detail(request, pk):
     appt = get_object_or_404(Appointment.objects.select_related('zone', 'assigned_collector'), pk=pk)
     status_form = AppointmentStatusForm(instance=appt)
@@ -182,7 +185,7 @@ def appointment_detail(request, pk):
 
 
 # ── COLLECTORS ─────────────────────────────────────────────────────────────────
-
+@login_required
 def collector_list(request):
     collectors = WasteCollector.objects.select_related('zone').annotate(
         total_schedules=Count('schedules'),
@@ -192,10 +195,27 @@ def collector_list(request):
 
 
 # ── ZONES ──────────────────────────────────────────────────────────────────────
-
+@login_required
 def zone_list(request):
     zones = Zone.objects.annotate(
         total_schedules=Count('schedules'),
         active_collectors=Count('collectors', filter=Q(collectors__active=True))
     )
     return render(request, 'scheduling/zone_list.html', {'zones': zones})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'Account created! Welcome to CleanCity.')
+            return redirect('dashboard')
+    else:
+        form = UserCreationForm()
+    return render(request, 'scheduling/register.html', {'form': form})
+
+@login_required
+def about(request):
+    return render(request, 'scheduling/about.html')
+
